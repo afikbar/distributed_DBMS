@@ -57,7 +57,7 @@ def tal_consumer(ip, port, topic):
         if not data_filter(msg_dict): 
             continue
         
-        data_convert(msg_dict)
+#         data_convert(msg_dict)
               
         # go to elastic.......
         # spiderpig - buttonwillow
@@ -66,7 +66,7 @@ def tal_consumer(ip, port, topic):
         print("sent to buttonwillow")
         # black panther - redding:
         if msg_dict['search_conducted'] and\
-            msg_dict['stop_date'] >= datetime(2016,1,30):
+            datetime.strptime(msg_dict['stop_date'], "%Y-%m-%d") >= datetime(2016,1,30):
             bp_json = json.dumps(msg_dict)
             es.index(index='reddings', doc_type='json', id=i, body=bp_json)
             print("sent to reddings")

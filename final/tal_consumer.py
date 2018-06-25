@@ -24,7 +24,6 @@ def str_to_bool(str):
     return str.lower() == "true"
 
 def data_filter(msg_dict):#returns true if data is ok
-    
     return msg_dict['location_raw'].title() in ['San Diego', 'Redding', 'Buttonwillow', 'Modesto'] and\
             msg_dict['search_conducted'].lower() in ['true','false'] and\
             msg_dict['is_arrested'].lower() in ['true','false'] and\
@@ -56,6 +55,7 @@ def tal_consumer(ip, port, topic):
         msg_dict = dict([(k,v) for k,v in zip(schema,val_ls) if k in SCHEMA_DEF])
 #         temp = msg_dict['id']
         if data_filter(msg_dict)==False: 
+            i+=1
             continue
         
         data_convert(msg_dict)

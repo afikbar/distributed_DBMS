@@ -48,6 +48,7 @@ def tal_consumer(ip, port, topic):
     
     es = Elasticsearch() 
     i=1
+    passed_filter = 1
     for msg in consumer:
         print("message number:",i)
         val_ls = msg_cleaner(msg)
@@ -57,41 +58,42 @@ def tal_consumer(ip, port, topic):
         if not data_filter(msg_dict): 
             continue
         
-#         data_convert(msg_dict)
-              
+        data_convert(msg_dict)
+        print("Passed filters count", passed_filter)  
+        passed_filter += 1
         # go to elastic.......
         # spiderpig - buttonwillow
-        loc_json = json.dumps({"location_raw":msg_dict["location_raw"]})
+        loc_json = json.dumps({"location_raw":msg_dict["location_raw"]}, default=str)
         es.index(index='buttonwillow', doc_type='json', id=i, body=loc_json)
-        print("sent to buttonwillow")
+#         print("sent to buttonwillow")
         # black panther - redding:
         if msg_dict['search_conducted'] and\
-            datetime.strptime(msg_dict['stop_date'], "%Y-%m-%d") >= datetime(2016,1,30):
-            bp_json = json.dumps(msg_dict)
+            msg_dict['stop_date'] >= datetime(2016,1,30):
+            bp_json = json.dumps(msg_dict, default=str)
             es.index(index='reddings', doc_type='json', id=i, body=bp_json)
-            print("sent to reddings")
+#             print("sent to reddings")
         else:
             #spiderman all genders
-            gender_json = json.dumps({"driver_gender":msg_dict["driver_gender"]})
+            gender_json = json.dumps({"driver_gender":msg_dict["driver_gender"]}, default=str)
             es.index(index='modesto_gender', doc_type='json', id=i, body=gender_json)
-            print("sent to modesto_gender")
+#             print("sent to modesto_gender")
             # superman - San Diego
             if msg_dict['driver_gender'] == 'F': #all females from bp_left
-                viol_json = json.dumps({"violation":msg_dict["violation"]})
+                viol_json = json.dumps({"violation":msg_dict["violation"]}. default=str)
                 es.index(index='sandiego_viol', doc_type='json', id=i, body=viol_json)
-                print("sent to sandiego_viol")
+#                 print("sent to sandiego_viol")
                 if msg_dict['location_raw'] != 'Modesto': #
-                    arstd_json = json.dumps({"is_arrested":msg_dict["is_arrested"]})
+                    arstd_json = json.dumps({"is_arrested":msg_dict["is_arrested"]}, default=str)
                     es.index(index='sandiego_arrested', doc_type='json', id=i, body=arstd_json)
-                    print("sent to sandiego_arrested")
+#                     print("sent to sandiego_arrested")
                     
                 
             
             # spiderman - Modesto
             else:
-                arstd_json = json.dumps({"is_arrested":msg_dict["is_arrested"]})
+                arstd_json = json.dumps({"is_arrested":msg_dict["is_arrested"]}, default=str)
                 es.index(index='sandiego_arrested', doc_type='json', id=i, body=arstd_json)
-                print("sent to sandiego_arrested")
+#                 print("sent to sandiego_arrested")
             
             
             

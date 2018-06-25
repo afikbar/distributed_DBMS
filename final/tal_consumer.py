@@ -14,7 +14,8 @@ class City(Enum):
     Modesto = 4
     
 SCHEMA_DEF = ['id', 'stop_date', 'location_raw', 'driver_gender', 
-                'driver_race', 'violation', 'search_conducted', 'is_arrested']   
+                'driver_race', 'violation', 'search_conducted', 'is_arrested']
+LEFT_SCHEMA = [fld for fld in SCHEMA_DEF if fld not in ['is_arrested', 'violation','location_raw', 'driver_gender']]
 
 def msg_cleaner(msg):
     result = re.sub("[()']",'',msg.value.decode('utf8')).split(",")
@@ -62,10 +63,7 @@ def tal_consumer(ip, port, topic):
         print("Passed filters count", passed_filter)  
         passed_filter += 1
         # go to elastic.......
-        # spiderpig - buttonwillow
-        loc_json = json.dumps({"location_raw":msg_dict["location_raw"]}, default=str)
-        es.index(index='buttonwillow', doc_type='json', id=i, body=loc_json)
-#         print("sent to buttonwillow")
+        
         # black panther - redding:
         if msg_dict['search_conducted'] and\
             msg_dict['stop_date'] >= datetime(2016,1,30):
@@ -73,28 +71,44 @@ def tal_consumer(ip, port, topic):
             es.index(index='reddings', doc_type='json', id=i, body=bp_json)
 #             print("sent to reddings")
         else:
+            # spiderpig - buttonwillow
+            loc_json = json.dumps({"location_raw":msg_dict["location_raw"]}, default=str)
+            es.index(index='buttonwillow_loc', doc_type='json', id=i, body=loc_json)
+    #         print("sent to buttonwillow")
+    
             #spiderman all genders
             gender_json = json.dumps({"driver_gender":msg_dict["driver_gender"]}, default=str)
             es.index(index='modesto_gender', doc_type='json', id=i, body=gender_json)
 #             print("sent to modesto_gender")
+
             # superman - San Diego
+            viol_json = json.dumps({"violation":msg_dict["violation"]}, default=str)
+        
             if msg_dict['driver_gender'] == 'F': #all females from bp_left
-                viol_json = json.dumps({"violation":msg_dict["violation"]}, default=str)
                 es.index(index='sandiego_viol', doc_type='json', id=i, body=viol_json)
 #                 print("sent to sandiego_viol")
-                if msg_dict['location_raw'] != 'Modesto': #
-                    arstd_json = json.dumps({"is_arrested":msg_dict["is_arrested"]}, default=str)
-                    es.index(index='sandiego_arrested', doc_type='json', id=i, body=arstd_json)
-#                     print("sent to sandiego_arrested")
-                    
-                
-            
-            # spiderman - Modesto
             else:
-                arstd_json = json.dumps({"is_arrested":msg_dict["is_arrested"]}, default=str)
+                if msg_dict['location_raw'] == 'Modesto':
+                    es.index(index='modesto_male_viol', doc_type='json', id=i, body=viol_json)
+                elif msg_dict['location_raw'] == 'San Diego':
+                    es.index(index='sandiego_male_viol', doc_type='json', id=i, body=viol_json)
+                elif msg_dict['location_raw'] == 'Redding':
+                    es.index(index='redding_male_viol', doc_type='json', id=i, body=viol_json)
+                elif msg_dict['location_raw'] == 'Buttonwillow':
+                    es.index(index='buttonwillow_male_viol', doc_type='json', id=i, body=viol_json)
+                    
+            arstd_json = json.dumps({"is_arrested":msg_dict["is_arrested"]}, default=str)
+            # NevadaArrested
+            if msg_dict['location_raw'] != 'Modesto' and msg_dict['driver_gender'] == 'F': 
                 es.index(index='sandiego_arrested', doc_type='json', id=i, body=arstd_json)
-#                 print("sent to sandiego_arrested")
-            
+#                     print("sent to sandiego_arrested")
+            # spiderman - Modesto (CaliforniaArrested)
+            else:
+                es.index(index='modesto_arrested', doc_type='json', id=i, body=arstd_json)
+#                 print("sent to modesto_arrested")
+
+            left_json = json.dumps({k:msg_dict[k] for k in LEFT_SCHEMA}, default=str)
+            es.index(index='leftovers', doc_type='json', id=i, body=left_json)
             
             
         

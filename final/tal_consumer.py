@@ -79,7 +79,7 @@ def tal_consumer(ip, port, topic):
 #             print("sent to modesto_gender")
             # superman - San Diego
             if msg_dict['driver_gender'] == 'F': #all females from bp_left
-                viol_json = json.dumps({"violation":msg_dict["violation"]}. default=str)
+                viol_json = json.dumps({"violation":msg_dict["violation"]}, default=str)
                 es.index(index='sandiego_viol', doc_type='json', id=i, body=viol_json)
 #                 print("sent to sandiego_viol")
                 if msg_dict['location_raw'] != 'Modesto': #

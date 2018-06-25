@@ -102,4 +102,4 @@ def tal_consumer(ip, port, topic):
 # In[26]:
 
 
-tal_consumer('104.209.178.73','5601','fpa')
+tal_consumer('104.209.178.73','5601','FPA')

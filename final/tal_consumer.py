@@ -55,7 +55,7 @@ def tal_consumer(ip, port, topic):
         #keeps only wanted data
         msg_dict = dict([(k,v) for k,v in zip(schema,val_ls) if k in SCHEMA_DEF])
 #         temp = msg_dict['id']
-        if not data_filter(msg_dict): 
+        if data_filter(msg_dict)==False: 
             continue
         
         data_convert(msg_dict)

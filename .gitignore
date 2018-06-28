@@ -58,3 +58,9 @@ docs/_build/
 target/
 
 lab2/\.idea/
+
+final/\.idea/
+
+*.zip
+
+final/DB PROJECT\.pdf
